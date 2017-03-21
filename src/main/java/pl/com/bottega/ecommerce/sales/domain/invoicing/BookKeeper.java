@@ -23,32 +23,19 @@ import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
 
 public class BookKeeper {
+	
+	private StrategyInterface StrategyInterface;
 
-	public Invoice issuance(ClientData client, List<RequestItem> items) {
+	public Invoice issuance(ClientData client, List<RequestItem> items, StrategyInterface StrategyInterface) {
 		Invoice invoice = InvoiceFactory.createInvoice(Id.generate(), client);
+		this.StrategyInterface = StrategyInterface;
 
 		for (RequestItem item : items) {
 			Money net = item.getTotalCost();
 			BigDecimal ratio = null;
 			String desc = null;
 			
-			switch (item.getProductData().getType()) {
-			case DRUG:
-				ratio = BigDecimal.valueOf(0.05);
-				desc = "5% (D)";
-				break;
-			case FOOD:
-				ratio = BigDecimal.valueOf(0.07);
-				desc = "7% (F)";
-				break;
-			case STANDARD:
-				ratio = BigDecimal.valueOf(0.23);
-				desc = "23%";
-				break;
-				
-			default:
-				throw new IllegalArgumentException(item.getProductData().getType() + " not handled");
-			}
+			StrategyInterface.set(ratio, desc, item);
 					
 			Money taxValue = net.multiplyBy(ratio);
 			
